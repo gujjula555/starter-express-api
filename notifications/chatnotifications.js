@@ -13,7 +13,7 @@ const registerSchema = Joi.object({
     id: Joi.string().min(3).required(),
 });
 admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
+    credential: admin.credential.cert(serviceAccount),
 });
 
 
@@ -58,16 +58,41 @@ router.post("/notifications", async (req, res) => {
     try {
         // const tokens = ["cRmguSjJQH-WbbpLYPVJlH:APA91bEziZJ16b8VsLnP3hwOf5DX0Lx1Uym2pzx2iMbAqaGQQmbMMkbbrXXwuceFGWHN8Wq39GVhLoMa28gJMu3i1BWnyWUHAwwF-pUIB02xXJ-NGSu_PVUSCneXVDHFU6LMEKCaAkhz"]
         const { tokens, title, body, imageUrl } = req.body;
-        const results = await Notification.find().exec();
-        await admin.messaging().sendMulticast({
-            tokens,
+
+        const payload = {
             notification: {
-                title,
-                body,
-                imageUrl,
-            },
-        });
-        res.status(200).json({ message: "Successfully sent notifications!" });
+                title: "FCM IS COOL !",
+                body: "Notification has been recieved",
+                content_available: "true",
+                image: "https://i.ytimg.com/vi/iosNuIdQoy8/maxresdefault.jpg"
+            }
+        }
+
+        const options = {
+            priority: "high"
+        }
+       
+       
+        // const results = await Notification.find().exec();
+        // await admin.messaging().sendMulticast({
+        //     tokens,
+        //     notification: {
+        //         title,
+        //         body,
+        //         imageUrl,
+        //     },
+        // });
+
+        admin.messaging().sendToDevice(tokens, payload, options)
+            .then(function (response) {
+                res.send('message succesfully sent !')
+            })
+            .catch(function (error) {
+                res.send(error).status(500)
+            });
+
+
+      //  res.status(200).json({ message: "Successfully sent notifications!" });
     } catch (err) {
         res
             .status(err.status || 500)

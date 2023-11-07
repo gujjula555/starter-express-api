@@ -7,7 +7,7 @@ const verify = require("../routes/authVerify");
 const Joi = require("@hapi/joi");
 
 var serviceAccount = require("./serviceAccountKey.json");
-
+var fcm = require('fcm-notification');
 const registerSchema = Joi.object({
     ntoken: Joi.string().min(3).required(),
     id: Joi.string().min(3).required(),
@@ -15,7 +15,9 @@ const registerSchema = Joi.object({
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
 });
+const certPath = admin.credential.cert(serviceAccount);
 
+var FCM = new fcm(certPath);
 
 const router = Express.Router();
 router.post("/register", async (req, res) => {
@@ -55,48 +57,30 @@ router.post("/register", async (req, res) => {
 });
 
 router.post("/notifications", async (req, res) => {
+
     try {
-        // const tokens = ["cRmguSjJQH-WbbpLYPVJlH:APA91bEziZJ16b8VsLnP3hwOf5DX0Lx1Uym2pzx2iMbAqaGQQmbMMkbbrXXwuceFGWHN8Wq39GVhLoMa28gJMu3i1BWnyWUHAwwF-pUIB02xXJ-NGSu_PVUSCneXVDHFU6LMEKCaAkhz"]
         const { tokens, title, body, imageUrl } = req.body;
+        let message = {
+            android: {
+                notification: {
+                    title: title,
+                    body: body,
+                },
+            },
+            token: tokens
+        };
 
-        const payload = {
-            notification: {
-                title: "FCM IS COOL !",
-                body: "Notification has been recieved",
-                content_available: "true",
-                image: "https://i.ytimg.com/vi/iosNuIdQoy8/maxresdefault.jpg"
+        FCM.send(message, function (err, resp) {
+            if (err) {
+                throw err;
+            } else {
+                console.log('Successfully sent notification');
             }
-        }
+        });
 
-        const options = {
-            priority: "high"
-        }
-       
-       
-        // const results = await Notification.find().exec();
-        // await admin.messaging().sendMulticast({
-        //     tokens,
-        //     notification: {
-        //         title,
-        //         body,
-        //         imageUrl,
-        //     },
-        // });
-
-        admin.messaging().sendToDevice(tokens, payload, options)
-            .then(function (response) {
-                res.send('message succesfully sent !')
-            })
-            .catch(function (error) {
-                res.send(error).status(500)
-            });
-
-
-      //  res.status(200).json({ message: "Successfully sent notifications!" });
     } catch (err) {
-        res
-            .status(err.status || 500)
-            .json({ message: err.message || "Something went wrong!" });
+        throw err;
     }
+
 });
 module.exports = router;

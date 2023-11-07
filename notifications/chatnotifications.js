@@ -56,7 +56,7 @@ router.post("/register", async (req, res) => {
 
 router.post("/notifications", async (req, res) => {
     try {
-
+        const tokens = ["cRmguSjJQH-WbbpLYPVJlH:APA91bEziZJ16b8VsLnP3hwOf5DX0Lx1Uym2pzx2iMbAqaGQQmbMMkbbrXXwuceFGWHN8Wq39GVhLoMa28gJMu3i1BWnyWUHAwwF-pUIB02xXJ-NGSu_PVUSCneXVDHFU6LMEKCaAkhz"]
         const { title, body, imageUrl } = req.body;
         const results = await Notification.find().exec();
         await admin.messaging().sendMulticast({

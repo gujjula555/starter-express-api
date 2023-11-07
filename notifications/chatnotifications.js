@@ -18,7 +18,7 @@ admin.initializeApp({
 
 
 const router = Express.Router();
-router.post("/register", verify, async (req, res) => {
+router.post("/register", async (req, res) => {
 
     const notificationtoken = await Notification.findOne({ email: req.body.ntoken });
     const userId = await Notification.findOne({ email: req.body.id });
